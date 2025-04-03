@@ -42,19 +42,14 @@ jobs:
           tag_or_branch="${tag_or_branch#refs/heads/}"
           # replace directory separators with _ in branch name
           tag_or_branch="${tag_or_branch//\//_}"
+          # strip trailing v from tag name
+          tag_or_branch="${tag_or_branch#v}"
           echo "RELEASE_NAME=triton-$tag_or_branch" >> "$GITHUB_ENV"
-          echo "RELEASE_FILE=triton-$tag_or_branch.tar.gz" >> "$GITHUB_ENV"
+          echo "RELEASE_FILE=dist/triton-$tag_or_branch.tar.gz" >> "$GITHUB_ENV"
       - name: Create source distribution
         run: |
-            # Create new folder with specified name so extracting the archive yields that
-            rm -rf "/tmp/$RELEASE_NAME"
-            cp -r "$PWD" "/tmp/$RELEASE_NAME"
-            mv "/tmp/$RELEASE_NAME" .
-            # Cleanup
-            find "$RELEASE_NAME" -name '.git*' -exec rm -rv {} \; || true
-            # Create archive
-            tar -czf "$RELEASE_FILE" "$RELEASE_NAME"
-            echo "Created source archive $RELEASE_FILE with content: $(ls -a "$RELEASE_NAME")"
+          pip install build
+          python -m build -s
       - name: Upload source distribution for release
         if: ${{ github.event_name == 'release' }}
         uses: softprops/action-gh-release@v2
