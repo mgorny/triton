@@ -728,6 +728,14 @@ def get_git_commit_hash(length=8):
         return ""
 
 
+def get_git_tag():
+    try:
+        cmd = ['git', 'describe', '--tags', '--exact-match', 'HEAD']
+        return subprocess.check_output(cmd).strip().decode('utf-8')
+    except Exception:
+        return ""
+
+
 def get_git_branch():
     try:
         cmd = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
@@ -737,8 +745,9 @@ def get_git_branch():
 
 
 def get_git_version_suffix():
+    tag = get_git_tag()
     branch = get_git_branch()
-    if branch.startswith("release"):
+    if tag.startswith("v") or branch.startswith("release"):
         return ""
     else:
         return get_git_commit_hash()
